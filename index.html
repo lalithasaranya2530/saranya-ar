@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AR Album</title>
+
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+<style>
+html,body{
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+}
+</style>
+
+</head>
+
+<body>
+
+<a-scene
+mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
+color-space="sRGB"
+renderer="colorManagement:true"
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false"
+embedded
+>
+
+<a-assets>
+
+<video
+id="Saranya"
+src="./videos/Saranya.mp4"
+loop
+muted
+playsinline
+webkit-playsinline
+crossorigin="anonymous"
+preload="auto"
+></video>
+
+</a-assets>
+
+<a-camera
+position="0 0 0"
+look-controls="enabled:false"
+></a-camera>
+
+</a-scene>
+
+
+<script>
+
+const scene=document.querySelector("a-scene");
+
+const video=document.querySelector("#Saranya");
+
+const TOTAL_MARKERS=30;
+
+
+for(let i=0;i<TOTAL_MARKERS;i++){
+
+let marker=document.createElement("a-entity");
+
+marker.setAttribute(
+"mindar-image-target",
+`targetIndex:${i}`
+);
+
+
+let videoPlane=document.createElement("a-video");
+
+videoPlane.setAttribute(
+"src",
+"#Saranya"
+);
+
+videoPlane.setAttribute(
+"width",
+"1"
+);
+
+videoPlane.setAttribute(
+"height",
+"1.5"
+);
+
+videoPlane.setAttribute(
+"position",
+"0 0 0"
+);
+
+marker.appendChild(videoPlane);
+
+
+marker.addEventListener(
+"targetFound",
+()=>{
+
+video.currentTime=0;
+
+video.play()
+.catch(err=>{
+
+console.log(err);
+
+});
+
+}
+);
+
+
+marker.addEventListener(
+"targetLost",
+()=>{
+
+video.pause();
+
+video.currentTime=0;
+
+}
+);
+
+scene.appendChild(marker);
+
+}
+
+</script>
+
+</body>
+</html>
