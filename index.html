@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -12,37 +11,31 @@
 <style>
 html,body{
 margin:0;
-width:100%;
 height:100%;
 overflow:hidden;
 }
 
-#startButton{
+#startBtn{
 position:fixed;
-bottom:30px;
-left:50%;
-transform:translateX(-50%);
-padding:12px 25px;
-font-size:18px;
-border:none;
-border-radius:10px;
 z-index:9999;
-background:#000;
-color:#fff;
+left:50%;
+bottom:30px;
+transform:translateX(-50%);
+padding:12px 20px;
+font-size:18px;
+border-radius:12px;
+border:none;
 }
 
 .hide{
 display:none;
 }
 </style>
-
 </head>
 
 <body>
 
-<button id="startButton">
-Tap To Start Audio
-</button>
+<button id="startBtn">Start AR</button>
 
 <a-scene
 mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
@@ -58,41 +51,36 @@ embedded
 <video
 id="Saranya"
 src="./videos/Saranya.mp4"
-loop
 playsinline
-webkit-playsinline
+webkit-playsinline="true"
 crossorigin="anonymous"
 preload="auto"
+loop
 ></video>
 
 </a-assets>
 
-<a-camera
-position="0 0 0"
-look-controls="enabled:false">
-</a-camera>
+<a-camera position="0 0 0"
+look-controls="enabled:false"></a-camera>
 
 </a-scene>
 
+
 <script>
 
-const scene=document.querySelector("a-scene");
-
 const video=document.querySelector("#Saranya");
+const scene=document.querySelector("a-scene");
+const startBtn=document.querySelector("#startBtn");
 
-const startButton=document.querySelector("#startButton");
-
-const TOTAL_MARKERS=30;
-
-let audioUnlocked=false;
+let unlocked=false;
 
 
-// mobile audio unlock
-startButton.addEventListener("click",async()=>{
+// audio unlock
+startBtn.onclick=async()=>{
 
 try{
 
-video.muted=false;
+video.muted=true;
 
 await video.play();
 
@@ -100,9 +88,11 @@ video.pause();
 
 video.currentTime=0;
 
-audioUnlocked=true;
+video.muted=false;
 
-startButton.classList.add("hide");
+unlocked=true;
+
+startBtn.classList.add("hide");
 
 }catch(e){
 
@@ -110,8 +100,10 @@ console.log(e);
 
 }
 
-});
+};
 
+
+const TOTAL_MARKERS=30;
 
 
 for(let i=0;i<TOTAL_MARKERS;i++){
@@ -123,30 +115,17 @@ marker.setAttribute(
 `targetIndex:${i}`
 );
 
+let plane=document.createElement("a-video");
 
-let videoPlane=document.createElement("a-video");
+plane.setAttribute("src","#Saranya");
 
-videoPlane.setAttribute(
-"src",
-"#Saranya"
-);
+plane.setAttribute("width","1");
 
-videoPlane.setAttribute(
-"width",
-"1"
-);
+plane.setAttribute("height","1.5");
 
-videoPlane.setAttribute(
-"height",
-"1.5"
-);
+plane.setAttribute("position","0 0 0");
 
-videoPlane.setAttribute(
-"position",
-"0 0 0");
-
-
-marker.appendChild(videoPlane);
+marker.appendChild(plane);
 
 
 
@@ -154,7 +133,7 @@ marker.addEventListener(
 "targetFound",
 ()=>{
 
-if(audioUnlocked){
+if(unlocked){
 
 video.currentTime=0;
 
