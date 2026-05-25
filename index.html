@@ -16,11 +16,33 @@ width:100%;
 height:100%;
 overflow:hidden;
 }
+
+#startButton{
+position:fixed;
+bottom:30px;
+left:50%;
+transform:translateX(-50%);
+padding:12px 25px;
+font-size:18px;
+border:none;
+border-radius:10px;
+z-index:9999;
+background:#000;
+color:#fff;
+}
+
+.hide{
+display:none;
+}
 </style>
 
 </head>
 
 <body>
+
+<button id="startButton">
+Tap To Start Audio
+</button>
 
 <a-scene
 mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
@@ -37,7 +59,6 @@ embedded
 id="Saranya"
 src="./videos/Saranya.mp4"
 loop
-muted
 playsinline
 webkit-playsinline
 crossorigin="anonymous"
@@ -48,11 +69,10 @@ preload="auto"
 
 <a-camera
 position="0 0 0"
-look-controls="enabled:false"
-></a-camera>
+look-controls="enabled:false">
+</a-camera>
 
 </a-scene>
-
 
 <script>
 
@@ -60,7 +80,38 @@ const scene=document.querySelector("a-scene");
 
 const video=document.querySelector("#Saranya");
 
+const startButton=document.querySelector("#startButton");
+
 const TOTAL_MARKERS=30;
+
+let audioUnlocked=false;
+
+
+// mobile audio unlock
+startButton.addEventListener("click",async()=>{
+
+try{
+
+video.muted=false;
+
+await video.play();
+
+video.pause();
+
+video.currentTime=0;
+
+audioUnlocked=true;
+
+startButton.classList.add("hide");
+
+}catch(e){
+
+console.log(e);
+
+}
+
+});
+
 
 
 for(let i=0;i<TOTAL_MARKERS;i++){
@@ -92,27 +143,28 @@ videoPlane.setAttribute(
 
 videoPlane.setAttribute(
 "position",
-"0 0 0"
-);
+"0 0 0");
+
 
 marker.appendChild(videoPlane);
+
 
 
 marker.addEventListener(
 "targetFound",
 ()=>{
 
+if(audioUnlocked){
+
 video.currentTime=0;
 
-video.play()
-.catch(err=>{
+video.play();
 
-console.log(err);
-
-});
+}
 
 }
 );
+
 
 
 marker.addEventListener(
