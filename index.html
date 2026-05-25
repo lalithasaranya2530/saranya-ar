@@ -11,24 +11,20 @@
 <style>
 html,body{
 margin:0;
-height:100%;
 overflow:hidden;
+height:100%;
 }
 
 #startBtn{
 position:fixed;
-z-index:9999;
-left:50%;
 bottom:30px;
+left:50%;
 transform:translateX(-50%);
+z-index:9999;
 padding:12px 20px;
 font-size:18px;
-border-radius:12px;
 border:none;
-}
-
-.hide{
-display:none;
+border-radius:10px;
 }
 </style>
 </head>
@@ -48,11 +44,12 @@ embedded
 
 <a-assets>
 
+<!-- AR texture video -->
 <video
 id="Saranya"
 src="./videos/Saranya.mp4"
 playsinline
-webkit-playsinline="true"
+webkit-playsinline
 crossorigin="anonymous"
 preload="auto"
 loop
@@ -68,31 +65,28 @@ look-controls="enabled:false"></a-camera>
 
 <script>
 
-const video=document.querySelector("#Saranya");
 const scene=document.querySelector("a-scene");
-const startBtn=document.querySelector("#startBtn");
+const video=document.getElementById("Saranya");
+const btn=document.getElementById("startBtn");
 
 let unlocked=false;
 
 
 // audio unlock
-startBtn.onclick=async()=>{
+btn.onclick=async()=>{
 
 try{
 
-video.muted=true;
-
+// browser audio unlock
 await video.play();
 
 video.pause();
 
 video.currentTime=0;
 
-video.muted=false;
-
 unlocked=true;
 
-startBtn.classList.add("hide");
+btn.style.display="none";
 
 }catch(e){
 
@@ -108,25 +102,37 @@ const TOTAL_MARKERS=30;
 
 for(let i=0;i<TOTAL_MARKERS;i++){
 
-let marker=document.createElement("a-entity");
+const marker=document.createElement("a-entity");
 
 marker.setAttribute(
 "mindar-image-target",
 `targetIndex:${i}`
 );
 
-let plane=document.createElement("a-video");
 
-plane.setAttribute("src","#Saranya");
+const plane=document.createElement("a-video");
 
-plane.setAttribute("width","1");
+plane.setAttribute(
+"src",
+"#Saranya"
+);
 
-plane.setAttribute("height","1.5");
+plane.setAttribute(
+"width",
+"1"
+);
 
-plane.setAttribute("position","0 0 0");
+plane.setAttribute(
+"height",
+"1.5"
+);
+
+plane.setAttribute(
+"position",
+"0 0 0"
+);
 
 marker.appendChild(plane);
-
 
 
 marker.addEventListener(
@@ -137,13 +143,16 @@ if(unlocked){
 
 video.currentTime=0;
 
+video.muted=false;
+
+video.volume=1;
+
 video.play();
 
 }
 
 }
 );
-
 
 
 marker.addEventListener(
