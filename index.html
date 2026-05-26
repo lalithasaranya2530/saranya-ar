@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AR Album</title>
+
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+}
+
+#fullscreenVideo{
+position:fixed;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+object-fit:contain;
+background:black;
+display:none;
+z-index:9999;
+}
+</style>
+</head>
+
+<body>
+
+<video
+id="fullscreenVideo"
+playsinline
+webkit-playsinline
+muted
+></video>
+
+<a-scene
+mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
+color-space="sRGB"
+renderer="colorManagement:true"
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false">
+
+<a-camera position="0 0 0"
+look-controls="enabled:false"></a-camera>
+
+</a-scene>
+
+<script>
+
+const video=document.querySelector("#fullscreenVideo");
+
+const MAX_TARGETS=30;
+
+function formatNumber(num){
+return String(num).padStart(3,'0');
+}
+
+function playVideo(index){
+
+let videoName=formatNumber(index+1);
+
+// 001.mp4
+// 002.mp4
+
+video.src=`./videos/${videoName}.mp4`;
+
+video.load();
+
+video.style.display="block";
+
+video.currentTime=0;
+
+video.play()
+.then(()=>console.log(videoName+" playing"))
+.catch(err=>console.log(err));
+
+}
+
+function stopVideo(){
+
+video.pause();
+
+video.currentTime=0;
+
+video.style.display="none";
+
+}
+
+window.addEventListener("load",()=>{
+
+const scene=document.querySelector("a-scene");
+
+for(let i=0;i<MAX_TARGETS;i++){
+
+let entity=document.createElement("a-entity");
+
+entity.setAttribute(
+"mindar-image-target",
+`targetIndex:${i}`
+);
+
+entity.addEventListener(
+"targetFound",
+()=>playVideo(i)
+);
+
+entity.addEventListener(
+"targetLost",
+stopVideo
+);
+
+scene.appendChild(entity);
+
+}
+
+});
+
+</script>
+
+</body>
+</html>
