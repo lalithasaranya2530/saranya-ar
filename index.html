@@ -17,12 +17,12 @@ overflow:hidden;
 position:fixed;
 top:0;
 left:0;
-width:100%;
-height:100%;
+width:100vw;
+height:100vh;
 object-fit:contain;
 background:black;
 display:none;
-z-index:999;
+z-index:9999;
 }
 </style>
 </head>
@@ -33,7 +33,7 @@ z-index:999;
 id="fullscreenVideo"
 playsinline
 webkit-playsinline
-muted
+controls
 ></video>
 
 <a-scene
@@ -54,20 +54,21 @@ look-controls="enabled:false">
 
 <script>
 
-window.addEventListener("DOMContentLoaded",()=>{
+const video=document.getElementById("fullscreenVideo");
 
-const video=document.querySelector("#fullscreenVideo");
 const scene=document.querySelector("a-scene");
 
-const TOTAL=30;
+const TOTAL_MARKERS=30;
 
-function format(n){
-return String(n+1).padStart(3,'0');
+function formatNumber(num){
+
+return String(num+1).padStart(3,'0');
+
 }
 
 function playVideo(index){
 
-let fileName=format(index);
+let fileName=formatNumber(index);
 
 video.pause();
 
@@ -75,13 +76,18 @@ video.src=`./videos/${fileName}.mp4`;
 
 video.load();
 
+video.currentTime=0;
+
 video.style.display="block";
 
-video.currentTime=0;
+video.muted=false;
+
+video.volume=1;
 
 setTimeout(()=>{
 
-video.play().catch(err=>console.log(err));
+video.play()
+.catch(err=>console.log(err));
 
 },300);
 
@@ -97,7 +103,23 @@ video.style.display="none";
 
 }
 
-for(let i=0;i<TOTAL;i++){
+document.body.addEventListener(
+
+"click",
+
+()=>{
+
+video.muted=false;
+
+},
+
+{once:true}
+
+);
+
+window.addEventListener("load",()=>{
+
+for(let i=0;i<TOTAL_MARKERS;i++){
 
 let marker=document.createElement("a-entity");
 
