@@ -7,7 +7,116 @@
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
+<style><!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AR Responsive Album</title>
+
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
 <style>
+body{
+margin:0;
+overflow:hidden;
+}
+</style>
+
+</head>
+
+<body>
+
+<a-scene
+mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
+embedded
+color-space="sRGB"
+renderer="colorManagement:true"
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false"
+>
+
+<a-assets></a-assets>
+
+<a-camera
+position="0 0 0"
+look-controls="enabled:false">
+</a-camera>
+
+</a-scene>
+
+<script>
+
+const scene=document.querySelector("a-scene");
+const assets=document.querySelector("a-assets");
+
+const TOTAL=30;
+
+function file(n){
+return String(n).padStart(3,'0');
+}
+
+for(let i=0;i<TOTAL;i++){
+
+let marker=document.createElement("a-entity");
+
+marker.setAttribute(
+"mindar-image-target",
+`targetIndex:${i}`
+);
+
+let video=document.createElement("video");
+
+video.id="v"+i;
+
+video.src=`./videos/${file(i+1)}.mp4`;
+
+video.setAttribute("loop",true);
+video.setAttribute("playsinline",true);
+video.setAttribute("webkit-playsinline",true);
+video.setAttribute("crossorigin","anonymous");
+
+assets.appendChild(video);
+
+let plane=document.createElement("a-video");
+
+plane.setAttribute(
+"src",
+`#v${i}`
+);
+
+plane.setAttribute(
+"position",
+"0 0 0"
+);
+
+plane.setAttribute(
+"scale",
+"1 1.5 1"
+);
+
+marker.appendChild(plane);
+
+marker.addEventListener("targetFound",()=>{
+
+video.play();
+
+});
+
+marker.addEventListener("targetLost",()=>{
+
+video.pause();
+
+});
+
+scene.appendChild(marker);
+
+}
+
+</script>
+
+</body>
+</html>
 body{
 margin:0;
 overflow:hidden;
