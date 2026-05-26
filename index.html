@@ -1,90 +1,124 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AR Album - 30 Markers (001 Format)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AR Album</title>
 
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+<style>
+body{
+margin:0;
+overflow:hidden;
+}
 
-    #fullscreenVideo {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
-      background: black;
-      display: none;
-      z-index: 9999;
-    }
-  </style>
+#fullscreenVideo{
+position:fixed;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+object-fit:contain;
+background:black;
+display:none;
+z-index:9999;
+}
+</style>
 </head>
 
 <body>
 
-  <video 
-    id="fullscreenVideo" 
-    playsinline 
-    webkit-playsinline 
-    autoplay
-  ></video>
+<video
+id="fullscreenVideo"
+playsinline
+webkit-playsinline
+muted
+></video>
 
-  <a-scene
-    mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1;"
-    color-space="sRGB"
-    renderer="colorManagement: true"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-  >
+<a-scene
+mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
+color-space="sRGB"
+renderer="colorManagement:true"
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false">
 
-    <a-assets></a-assets>
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+<a-camera position="0 0 0"
+look-controls="enabled:false"></a-camera>
 
-  </a-scene>
+</a-scene>
 
-  <script>
-    const fullscreenVideo = document.getElementById("fullscreenVideo");
-    const scene = document.querySelector("a-scene");
+<script>
 
-    const MAX_TARGETS = 30; // 30 markers
+const video=document.querySelector("#fullscreenVideo");
 
-    function formatNumber(num) {
-      return String(num).padStart(3, '0'); // 001 format
-    }
+const MAX_TARGETS=30;
 
-    function playVideo(index) {
-      const videoName = formatNumber(index + 1); // 1→001
-      fullscreenVideo.src = `./videos/${videoName}.mp4`;
-      fullscreenVideo.style.display = "block";
-      fullscreenVideo.play().catch(() => {});
-    }
+function formatNumber(num){
+return String(num).padStart(3,'0');
+}
 
-    function stopVideo() {
-      fullscreenVideo.pause();
-      fullscreenVideo.currentTime = 0;
-      fullscreenVideo.style.display = "none";
-    }
+function playVideo(index){
 
-    for (let i = 0; i < MAX_TARGETS; i++) {
-      const entity = document.createElement("a-entity");
-      entity.setAttribute("mindar-image-target", `targetIndex: ${i}`);
+let videoName=formatNumber(index+1);
 
-      entity.addEventListener("targetFound", () => {
-        playVideo(i);
-      });
+// 001.mp4
+// 002.mp4
 
-      entity.addEventListener("targetLost", stopVideo);
+video.src=`./videos/${videoName}.mp4`;
 
-      scene.appendChild(entity);
-    }
-  </script>
+video.load();
+
+video.style.display="block";
+
+video.currentTime=0;
+
+video.play()
+.then(()=>console.log(videoName+" playing"))
+.catch(err=>console.log(err));
+
+}
+
+function stopVideo(){
+
+video.pause();
+
+video.currentTime=0;
+
+video.style.display="none";
+
+}
+
+window.addEventListener("load",()=>{
+
+const scene=document.querySelector("a-scene");
+
+for(let i=0;i<MAX_TARGETS;i++){
+
+let entity=document.createElement("a-entity");
+
+entity.setAttribute(
+"mindar-image-target",
+`targetIndex:${i}`
+);
+
+entity.addEventListener(
+"targetFound",
+()=>playVideo(i)
+);
+
+entity.addEventListener(
+"targetLost",
+stopVideo
+);
+
+scene.appendChild(entity);
+
+}
+
+});
+
+</script>
 
 </body>
 </html>
