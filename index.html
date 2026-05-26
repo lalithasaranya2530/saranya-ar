@@ -1,104 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>AR Album</title>
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
-html,body{
+body{
 margin:0;
 overflow:hidden;
-height:100%;
 }
 
-#startBtn{
+#fullscreenVideo{
 position:fixed;
-bottom:30px;
-left:50%;
-transform:translateX(-50%);
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+object-fit:contain;
+background:black;
+display:none;
 z-index:9999;
-padding:12px 20px;
-font-size:18px;
-border:none;
-border-radius:10px;
 }
 </style>
+
 </head>
 
 <body>
 
-<button id="startBtn">Start AR</button>
+<video
+id="fullscreenVideo"
+playsinline
+webkit-playsinline
+autoplay
+></video>
 
 <a-scene
 mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
 color-space="sRGB"
 renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
-device-orientation-permission-ui="enabled:false"
-embedded
->
+device-orientation-permission-ui="enabled:false">
 
-<a-assets>
-
-<!-- AR texture video -->
-<video
-id="Saranya"
-src="./videos/Saranya.mp4"
-playsinline
-webkit-playsinline
-crossorigin="anonymous"
-preload="auto"
-loop
-></video>
-
-</a-assets>
+<a-assets></a-assets>
 
 <a-camera position="0 0 0"
-look-controls="enabled:false"></a-camera>
+look-controls="enabled:false">
+</a-camera>
 
 </a-scene>
 
-
 <script>
 
-const scene=document.querySelector("a-scene");
-const video=document.getElementById("Saranya");
-const btn=document.getElementById("startBtn");
+const video = document.getElementById("fullscreenVideo");
+const scene = document.querySelector("a-scene");
 
-let unlocked=false;
+const TOTAL_MARKERS = 30;
 
+function playVideo(index){
 
-// audio unlock
-btn.onclick=async()=>{
+let videoNumber = String(index+1).padStart(3,'0');
 
-try{
+//videos folder lo:
+//001.mp4
+//002.mp4
+//003.mp4...
 
-// browser audio unlock
-await video.play();
+video.src=`./videos/${videoNumber}.mp4`;
+
+video.style.display="block";
+
+video.load();
+
+video.play().catch(()=>{});
+
+}
+
+function stopVideo(){
 
 video.pause();
 
 video.currentTime=0;
 
-unlocked=true;
-
-btn.style.display="none";
-
-}catch(e){
-
-console.log(e);
+video.style.display="none";
 
 }
-
-};
-
-
-const TOTAL_MARKERS=30;
-
 
 for(let i=0;i<TOTAL_MARKERS;i++){
 
@@ -109,61 +97,14 @@ marker.setAttribute(
 `targetIndex:${i}`
 );
 
-
-const plane=document.createElement("a-video");
-
-plane.setAttribute(
-"src",
-"#Saranya"
-);
-
-plane.setAttribute(
-"width",
-"1"
-);
-
-plane.setAttribute(
-"height",
-"1.5"
-);
-
-plane.setAttribute(
-"position",
-"0 0 0"
-);
-
-marker.appendChild(plane);
-
-
 marker.addEventListener(
 "targetFound",
-()=>{
-
-if(unlocked){
-
-video.currentTime=0;
-
-video.muted=false;
-
-video.volume=1;
-
-video.play();
-
-}
-
-}
+()=>playVideo(i)
 );
-
 
 marker.addEventListener(
 "targetLost",
-()=>{
-
-video.pause();
-
-video.currentTime=0;
-
-}
+stopVideo
 );
 
 scene.appendChild(marker);
