@@ -34,6 +34,7 @@ id="fullscreenVideo"
 playsinline
 webkit-playsinline
 controls
+preload="auto"
 ></video>
 
 <a-scene
@@ -42,11 +43,9 @@ embedded
 color-space="sRGB"
 renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
-device-orientation-permission-ui="enabled:false"
->
+device-orientation-permission-ui="enabled:false">
 
-<a-camera
-position="0 0 0"
+<a-camera position="0 0 0"
 look-controls="enabled:false">
 </a-camera>
 
@@ -55,20 +54,32 @@ look-controls="enabled:false">
 <script>
 
 const video=document.getElementById("fullscreenVideo");
-
 const scene=document.querySelector("a-scene");
 
-const TOTAL_MARKERS=30;
+const TOTAL=30;
 
-function formatNumber(num){
+let audioUnlocked=false;
 
-return String(num+1).padStart(3,'0');
+// first tap → unlock audio
+document.body.addEventListener("click",()=>{
+
+audioUnlocked=true;
+
+video.muted=false;
+
+video.volume=1;
+
+}, {once:true});
+
+function format(n){
+
+return String(n+1).padStart(3,'0');
 
 }
 
 function playVideo(index){
 
-let fileName=formatNumber(index);
+let fileName=format(index);
 
 video.pause();
 
@@ -80,7 +91,7 @@ video.currentTime=0;
 
 video.style.display="block";
 
-video.muted=false;
+video.muted=!audioUnlocked;
 
 video.volume=1;
 
@@ -103,23 +114,9 @@ video.style.display="none";
 
 }
 
-document.body.addEventListener(
-
-"click",
-
-()=>{
-
-video.muted=false;
-
-},
-
-{once:true}
-
-);
-
 window.addEventListener("load",()=>{
 
-for(let i=0;i<TOTAL_MARKERS;i++){
+for(let i=0;i<TOTAL;i++){
 
 let marker=document.createElement("a-entity");
 
