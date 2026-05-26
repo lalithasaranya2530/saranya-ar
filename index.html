@@ -4,6 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>AR Album</title>
 
+<!-- A-Frame మరియు MindAR లైబ్రరీలు -->
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
@@ -11,7 +12,7 @@
 body {
     margin: 0;
     overflow: hidden;
-    font-family: sans-serif;
+    font-family: Arial, sans-serif;
 }
 
 #fullscreenVideo {
@@ -26,46 +27,49 @@ body {
     z-index: 9999;
 }
 
-/* ఆడియో అన్‌లాక్ చేయడానికి స్టార్ట్ బటన్ స్టైల్స్ */
+/* ఆడియో పర్మిషన్ కోసం ఓవర్లే స్క్రీన్ స్టైల్ */
 #overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
     z-index: 10000;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color: white;
+    text-align: center;
 }
 
 #startButton {
-    padding: 15px 30px;
+    padding: 15px 40px;
     font-size: 18px;
-    background-color: #007bff;
+    background-color: #28a745;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 30px;
     cursor: pointer;
     font-weight: bold;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+    margin-top: 20px;
+    box-shadow: 0px 4px 15px rgba(40, 167, 69, 0.4);
+    text-transform: uppercase;
 }
 
 #startButton:active {
-    background-color: #0056b3;
+    background-color: #218838;
 }
 </style>
 </head>
 
 <body>
 
-<!-- స్టార్ట్ బటన్ ఓవర్లే (దీనివల్ల ఆడియో గ్యారెంటీగా వస్తుంది) -->
+<!-- సౌండ్ అన్‌లాక్ చేయడానికి బటన్ స్క్రీన్ -->
 <div id="overlay">
     <h2>AR Album</h2>
-    <p>వీడియో సౌండ్ వినడానికి కింద బటన్ నొక్కండి</p>
+    <p>వీడియో సౌండ్ (Audio) వినడానికి కింద బటన్ నొక్కండి</p>
     <button id="startButton">START AR</button>
 </div>
 
@@ -77,7 +81,7 @@ body {
     preload="auto"
 ></video>
 
-<!-- autoStart: false పెట్టాము, బటన్ నొక్కాకే కెమెరా స్టార్ట్ అవుతుంది -->
+<!-- autoStart: false పెట్టాము, బటన్ నొక్కాకే కెమెరా ఆన్ అవుతుంది -->
 <a-scene
     id="arScene"
     mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1; autoStart: false;"
@@ -98,31 +102,30 @@ const overlay = document.getElementById("overlay");
 const startButton = document.getElementById("startButton");
 
 const TOTAL = 30;
-let audioUnlocked = false;
 
-// బటన్ క్లిక్ చేసినప్పుడు ఆడియో అన్‌లాక్ అయి AR సీన్ స్టార్ట్ అవుతుంది
+// 1. యూజర్ బటన్ నొక్కగానే ఆడియో పర్మిషన్ అన్‌లాక్ అవుతుంది
 startButton.addEventListener("click", () => {
-    audioUnlocked = true;
-    
-    // ఆడియోను ఫోర్స్ అన్‌లాక్ చేయడం కోసం ఖాళీ వీడియో ట్రిగ్గర్
+    // బ్రౌజర్ ఆడియోను అనుమతించడానికి వీడియోను అన్‌మ్యూట్ చేసి ఒకసారి ట్రిగ్గర్ చేస్తున్నాం
     video.muted = false;
-    video.volume = 1;
+    video.volume = 1.0;
+    
+    // ఒక చిన్న బ్లాంక్ యాక్షన్ ద్వారా బ్రౌజర్ ఆడియో లాక్‌ని బ్రేక్ చేయడం
     video.play().then(() => {
         video.pause();
-    }).catch(e => console.log("Audio unlock note:", e));
+    }).catch(err => console.log("Audio unlock interaction done"));
 
-    // ఓవర్లే స్క్రీన్ దాచేయడం
+    // ఓవర్లే స్క్రీన్ తీసేయడం
     overlay.style.display = "none";
 
-    // MindAR సీన్ స్టార్ట్ చేయడం
-    const sceneEl = document.querySelector('a-scene');
-    sceneEl.systems["mindar-image-system"].start(); 
+    // MindAR కెమెరా మరియు స్కానింగ్‌ని స్టార్ట్ చేయడం
+    scene.components['mindar-image-system'].start();
 });
 
 function format(n) {
     return String(n + 1).padStart(3, '0');
 }
 
+// 2. టార్గెట్ దొరికినప్పుడు వీడియో ప్లే అయ్యే ఫంక్షన్
 function playVideo(index) {
     let fileName = format(index);
 
@@ -130,28 +133,36 @@ function playVideo(index) {
     video.src = `./videos/${fileName}.mp4`;
     video.load();
     video.currentTime = 0;
+    
+    // ఇక్కడ ఖచ్చితంగా మ్యూట్ తీసేసి, ఫుల్ వాల్యూమ్ పెడుతున్నాం
+    video.muted = false;
+    video.volume = 1.0;
+    
     video.style.display = "block";
 
-    // ఇక్కడ మ్యూట్ తీసేస్తున్నాము
-    video.muted = false;
-    video.volume = 1;
-
+    // వీడియో లోడ్ అవ్వడానికి చిన్న టైమ్‌అవుట్
     setTimeout(() => {
-        video.play().catch(err => {
-            console.log("Video play failed, trying muted:", err);
-            // ఒకవేళ అప్పటికీ బ్రౌజర్ ఆపితే మ్యూట్ చేసి ప్లే చేయడానికి ట్రై చేస్తుంది
-            video.muted = true;
-            video.play();
-        });
-    }, 300);
+        let playPromise = video.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Play failed, retrying...", error);
+                // సేఫ్టీ కోసం ఒకవేళ ఆగితే మళ్లీ ప్లే చేయడానికి ట్రై చేస్తుంది
+                video.muted = false;
+                video.play();
+            });
+        }
+    }, 250);
 }
 
+// 3. టార్గెట్ కోల్పోయినప్పుడు వీడియో ఆపే ఫంక్షన్
 function stopVideo() {
     video.pause();
     video.currentTime = 0;
     video.style.display = "none";
 }
 
+// 4. టార్గెట్ మార్కర్లను క్రియేట్ చేయడం
 window.addEventListener("load", () => {
     for (let i = 0; i < TOTAL; i++) {
         let marker = document.createElement("a-entity");
