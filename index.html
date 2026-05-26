@@ -1,240 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>AR Album Responsive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>AR Album (Responsive Target Video)</title>
+    
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-<style><!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>AR Responsive Album</title>
-
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-<style>
-body{
-margin:0;
-overflow:hidden;
-}
-</style>
-
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        /* Hidden assets compiler style */
+        #ar-assets {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
 
-<a-scene
-mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
-embedded
-color-space="sRGB"
-renderer="colorManagement:true"
-vr-mode-ui="enabled:false"
-device-orientation-permission-ui="enabled:false"
->
+    <a-scene 
+        mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1;" 
+        color-space="sRGB" 
+        renderer="colorManagement: true, physicallyCorrectLights: true" 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false">
+        
+        <a-assets>
+            <video id="arVideo" playsinline webkit-playsinline muted loop></video>
+        </a-assets>
 
-<a-assets></a-assets>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-<a-camera
-position="0 0 0"
-look-controls="enabled:false">
-</a-camera>
-
-</a-scene>
+        </a-scene>
 
 <script>
+    const video = document.querySelector("#arVideo");
+    const scene = document.querySelector("a-scene");
+    const MAX_TARGETS = 30;
 
-const scene=document.querySelector("a-scene");
-const assets=document.querySelector("a-assets");
+    function formatNumber(num) {
+        return String(num).padStart(3, '0');
+    }
 
-const TOTAL=30;
+    // Function to handle video play on specific target
+    function playARVideo(index) {
+        let videoName = formatNumber(index + 1);
+        
+        // Changing source dynamically
+        video.src = `./videos/${videoName}.mp4`;
+        video.load();
+        
+        video.play()
+            .then(() => console.log(videoName + " playing on target " + index))
+            .catch(err => console.log("Video play error: ", err));
+    }
 
-function file(n){
-return String(n).padStart(3,'0');
-}
+    // Function to stop video
+    function stopARVideo() {
+        video.pause();
+        video.currentTime = 0;
+    }
 
-for(let i=0;i<TOTAL;i++){
+    window.addEventListener("load", () => {
+        for (let i = 0; i < MAX_TARGETS; i++) {
+            // 1. Create the main target entity
+            let targetEntity = document.createElement("a-entity");
+            targetEntity.setAttribute("mindar-image-target", `targetIndex: ${i}`);
 
-let marker=document.createElement("a-entity");
+            // 2. Create the video mesh that sits ON the target
+            let videoMesh = document.createElement("a-video");
+            videoMesh.setAttribute("src", "#arVideo");
+            
+            // Adjust scale/position to fit your target aspect ratio (Width Height Depth)
+            // standard 1:1 ratio is 1 1 1. Change width/height if your photo is rectangle.
+            videoMesh.setAttribute("width", "1");
+            videoMesh.setAttribute("height", "1"); 
+            videoMesh.setAttribute("position", "0 0 0");
 
-marker.setAttribute(
-"mindar-image-target",
-`targetIndex:${i}`
-);
+            // Append video mesh inside the target entity
+            targetEntity.appendChild(videoMesh);
 
-let video=document.createElement("video");
+            // 3. Event Listeners for target detection
+            targetEntity.addEventListener("targetFound", () => {
+                playARVideo(i);
+            });
 
-video.id="v"+i;
+            targetEntity.addEventListener("targetLost", () => {
+                stopARVideo();
+            });
 
-video.src=`./videos/${file(i+1)}.mp4`;
-
-video.setAttribute("loop",true);
-video.setAttribute("playsinline",true);
-video.setAttribute("webkit-playsinline",true);
-video.setAttribute("crossorigin","anonymous");
-
-assets.appendChild(video);
-
-let plane=document.createElement("a-video");
-
-plane.setAttribute(
-"src",
-`#v${i}`
-);
-
-plane.setAttribute(
-"position",
-"0 0 0"
-);
-
-plane.setAttribute(
-"scale",
-"1 1.5 1"
-);
-
-marker.appendChild(plane);
-
-marker.addEventListener("targetFound",()=>{
-
-video.play();
-
-});
-
-marker.addEventListener("targetLost",()=>{
-
-video.pause();
-
-});
-
-scene.appendChild(marker);
-
-}
-
-</script>
-
-</body>
-</html>
-body{
-margin:0;
-overflow:hidden;
-}
-</style>
-
-</head>
-
-<body>
-
-<a-scene
-mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
-color-space="sRGB"
-renderer="colorManagement:true"
-vr-mode-ui="enabled:false"
-device-orientation-permission-ui="enabled:false"
-embedded
->
-
-<a-assets>
-
-<video id="video001"
-src="./videos/001.mp4"
-playsinline
-webkit-playsinline
-crossorigin="anonymous">
-</video>
-
-</a-assets>
-
-<a-camera
-position="0 0 0"
-look-controls="enabled:false">
-</a-camera>
-
-</a-scene>
-
-<script>
-
-const scene=document.querySelector("a-scene");
-
-const MAX_TARGETS=30;
-
-function formatNumber(num){
-return String(num).padStart(3,'0');
-}
-
-for(let i=0;i<MAX_TARGETS;i++){
-
-let marker=document.createElement("a-entity");
-
-marker.setAttribute(
-"mindar-image-target",
-`targetIndex:${i}`
-);
-
-let video=document.createElement("video");
-
-let videoID="video"+formatNumber(i+1);
-
-video.setAttribute("id",videoID);
-
-video.setAttribute(
-"src",
-`./videos/${formatNumber(i+1)}.mp4`
-);
-
-video.setAttribute("playsinline","");
-video.setAttribute("webkit-playsinline","");
-video.setAttribute("crossorigin","anonymous");
-
-document
-.querySelector("a-assets")
-.appendChild(video);
-
-let plane=document.createElement("a-video");
-
-plane.setAttribute(
-"src",
-`#${videoID}`
-);
-
-plane.setAttribute(
-"position",
-"0 0 0"
-);
-
-plane.setAttribute(
-"width",
-"1"
-);
-
-plane.setAttribute(
-"height",
-"1.5"
-);
-
-marker.appendChild(plane);
-
-marker.addEventListener(
-"targetFound",
-()=>{
-video.play();
-}
-);
-
-marker.addEventListener(
-"targetLost",
-()=>{
-video.pause();
-video.currentTime=0;
-}
-);
-
-scene.appendChild(marker);
-
-}
-
+            // Append everything to the scene
+            scene.appendChild(targetEntity);
+        }
+    });
 </script>
 
 </body>
