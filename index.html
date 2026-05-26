@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>AR Album</title>
+<title>AR Album Responsive</title>
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -12,45 +12,42 @@ body{
 margin:0;
 overflow:hidden;
 }
-
-#fullscreenVideo{
-position:fixed;
-top:0;
-left:0;
-width:100vw;
-height:100vh;
-object-fit:contain;
-background:black;
-display:none;
-z-index:9999;
-}
 </style>
+
 </head>
 
 <body>
-
-<video
-id="fullscreenVideo"
-playsinline
-webkit-playsinline
-muted
-></video>
 
 <a-scene
 mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
 color-space="sRGB"
 renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
-device-orientation-permission-ui="enabled:false">
+device-orientation-permission-ui="enabled:false"
+embedded
+>
 
-<a-camera position="0 0 0"
-look-controls="enabled:false"></a-camera>
+<a-assets>
+
+<video id="video001"
+src="./videos/001.mp4"
+playsinline
+webkit-playsinline
+crossorigin="anonymous">
+</video>
+
+</a-assets>
+
+<a-camera
+position="0 0 0"
+look-controls="enabled:false">
+</a-camera>
 
 </a-scene>
 
 <script>
 
-const video=document.querySelector("#fullscreenVideo");
+const scene=document.querySelector("a-scene");
 
 const MAX_TARGETS=30;
 
@@ -58,65 +55,76 @@ function formatNumber(num){
 return String(num).padStart(3,'0');
 }
 
-function playVideo(index){
-
-let videoName=formatNumber(index+1);
-
-// 001.mp4
-// 002.mp4
-
-video.src=`./videos/${videoName}.mp4`;
-
-video.load();
-
-video.style.display="block";
-
-video.currentTime=0;
-
-video.play()
-.then(()=>console.log(videoName+" playing"))
-.catch(err=>console.log(err));
-
-}
-
-function stopVideo(){
-
-video.pause();
-
-video.currentTime=0;
-
-video.style.display="none";
-
-}
-
-window.addEventListener("load",()=>{
-
-const scene=document.querySelector("a-scene");
-
 for(let i=0;i<MAX_TARGETS;i++){
 
-let entity=document.createElement("a-entity");
+let marker=document.createElement("a-entity");
 
-entity.setAttribute(
+marker.setAttribute(
 "mindar-image-target",
 `targetIndex:${i}`
 );
 
-entity.addEventListener(
+let video=document.createElement("video");
+
+let videoID="video"+formatNumber(i+1);
+
+video.setAttribute("id",videoID);
+
+video.setAttribute(
+"src",
+`./videos/${formatNumber(i+1)}.mp4`
+);
+
+video.setAttribute("playsinline","");
+video.setAttribute("webkit-playsinline","");
+video.setAttribute("crossorigin","anonymous");
+
+document
+.querySelector("a-assets")
+.appendChild(video);
+
+let plane=document.createElement("a-video");
+
+plane.setAttribute(
+"src",
+`#${videoID}`
+);
+
+plane.setAttribute(
+"position",
+"0 0 0"
+);
+
+plane.setAttribute(
+"width",
+"1"
+);
+
+plane.setAttribute(
+"height",
+"1.5"
+);
+
+marker.appendChild(plane);
+
+marker.addEventListener(
 "targetFound",
-()=>playVideo(i)
+()=>{
+video.play();
+}
 );
 
-entity.addEventListener(
+marker.addEventListener(
 "targetLost",
-stopVideo
+()=>{
+video.pause();
+video.currentTime=0;
+}
 );
 
-scene.appendChild(entity);
+scene.appendChild(marker);
 
 }
-
-});
 
 </script>
 
