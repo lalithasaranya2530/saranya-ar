@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AR Album</title>
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -25,7 +25,6 @@ display:none;
 z-index:9999;
 }
 </style>
-
 </head>
 
 <body>
@@ -34,7 +33,7 @@ z-index:9999;
 id="fullscreenVideo"
 playsinline
 webkit-playsinline
-autoplay
+muted
 ></video>
 
 <a-scene
@@ -42,11 +41,11 @@ mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
 color-space="sRGB"
 renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
-device-orientation-permission-ui="enabled:false">
+device-orientation-permission-ui="enabled:false"
+>
 
-<a-assets></a-assets>
-
-<a-camera position="0 0 0"
+<a-camera
+position="0 0 0"
 look-controls="enabled:false">
 </a-camera>
 
@@ -54,27 +53,30 @@ look-controls="enabled:false">
 
 <script>
 
-const video = document.getElementById("fullscreenVideo");
-const scene = document.querySelector("a-scene");
+const video=document.querySelector("#fullscreenVideo");
 
-const TOTAL_MARKERS = 30;
+document.querySelector("a-scene")
+.addEventListener("loaded",()=>{
+
+const scene=document.querySelector("a-scene");
+
+const TOTAL_MARKERS=30;
 
 function playVideo(index){
 
-let videoNumber = String(index+1).padStart(3,'0');
+let num=String(index+1).padStart(3,'0');
 
-//videos folder lo:
+// Example:
 //001.mp4
 //002.mp4
-//003.mp4...
 
-video.src=`./videos/${videoNumber}.mp4`;
+video.src=`./videos/${num}.mp4`;
 
 video.style.display="block";
 
-video.load();
+video.currentTime=0;
 
-video.play().catch(()=>{});
+video.play();
 
 }
 
@@ -82,15 +84,13 @@ function stopVideo(){
 
 video.pause();
 
-video.currentTime=0;
-
 video.style.display="none";
 
 }
 
 for(let i=0;i<TOTAL_MARKERS;i++){
 
-const marker=document.createElement("a-entity");
+let marker=document.createElement("a-entity");
 
 marker.setAttribute(
 "mindar-image-target",
@@ -110,6 +110,8 @@ stopVideo
 scene.appendChild(marker);
 
 }
+
+});
 
 </script>
 
