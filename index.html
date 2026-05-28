@@ -1,179 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>AR Album</title>
 
-<!-- A-Frame మరియు MindAR లైబ్రరీలు -->
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
-body {
-    margin: 0;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
+body{
+  margin:0;
+  overflow:hidden;
 }
 
-#fullscreenVideo {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: contain;
-    background: black;
-    display: none;
-    z-index: 9999;
-}
-
-/* ఆడియో పర్మిషన్ కోసం ఓవర్లే స్క్రీన్ స్టైల్ */
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 10000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    text-align: center;
-}
-
-#startButton {
-    padding: 15px 40px;
-    font-size: 18px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: 20px;
-    box-shadow: 0px 4px 15px rgba(40, 167, 69, 0.4);
-    text-transform: uppercase;
-}
-
-#startButton:active {
-    background-color: #218838;
+#fullscreenVideo{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  object-fit:contain;
+  background:black;
+  display:none;
+  z-index:9999;
 }
 </style>
+
 </head>
 
 <body>
 
-<!-- సౌండ్ అన్‌లాక్ చేయడానికి బటన్ స్క్రీన్ -->
-<div id="overlay">
-    <h2>AR Album</h2>
-    <p>వీడియో సౌండ్ (Audio) వినడానికి కింద బటన్ నొక్కండి</p>
-    <button id="startButton">START AR</button>
-</div>
-
 <video
-    id="fullscreenVideo"
-    playsinline
-    webkit-playsinline
-    controls
-    preload="auto"
+id="fullscreenVideo"
+playsinline
+webkit-playsinline
+autoplay
 ></video>
 
-<!-- autoStart: false పెట్టాము, బటన్ నొక్కాకే కెమెరా ఆన్ అవుతుంది -->
 <a-scene
-    id="arScene"
-    mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1; autoStart: false;"
-    embedded
-    color-space="sRGB"
-    renderer="colorManagement:true"
-    vr-mode-ui="enabled:false"
-    device-orientation-permission-ui="enabled:false">
+mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
+color-space="sRGB"
+renderer="colorManagement:true"
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false"
+>
 
-    <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+<a-assets></a-assets>
+
+<a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
 </a-scene>
 
 <script>
+
 const video = document.getElementById("fullscreenVideo");
 const scene = document.querySelector("a-scene");
-const overlay = document.getElementById("overlay");
-const startButton = document.getElementById("startButton");
 
-const TOTAL = 30;
+const TOTAL_MARKERS = 30;
 
-// 1. యూజర్ బటన్ నొక్కగానే ఆడియో పర్మిషన్ అన్‌లాక్ అవుతుంది
-startButton.addEventListener("click", () => {
-    // బ్రౌజర్ ఆడియోను అనుమతించడానికి వీడియోను అన్‌మ్యూట్ చేసి ఒకసారి ట్రిగ్గర్ చేస్తున్నాం
-    video.muted = false;
-    video.volume = 1.0;
-    
-    // ఒక చిన్న బ్లాంక్ యాక్షన్ ద్వారా బ్రౌజర్ ఆడియో లాక్‌ని బ్రేక్ చేయడం
-    video.play().then(() => {
-        video.pause();
-    }).catch(err => console.log("Audio unlock interaction done"));
+function playVideo(videoName){
 
-    // ఓవర్లే స్క్రీన్ తీసేయడం
-    overlay.style.display = "none";
+  video.src = `./videos/${videoName}.mp4`;
 
-    // MindAR కెమెరా మరియు స్కానింగ్‌ని స్టార్ట్ చేయడం
-    scene.components['mindar-image-system'].start();
-});
+  video.style.display = "block";
 
-function format(n) {
-    return String(n + 1).padStart(3, '0');
+  video.play().catch(()=>{});
+
 }
 
-// 2. టార్గెట్ దొరికినప్పుడు వీడియో ప్లే అయ్యే ఫంక్షన్
-function playVideo(index) {
-    let fileName = format(index);
+function stopVideo(){
 
-    video.pause();
-    video.src = `./videos/${fileName}.mp4`;
-    video.load();
-    video.currentTime = 0;
-    
-    // ఇక్కడ ఖచ్చితంగా మ్యూట్ తీసేసి, ఫుల్ వాల్యూమ్ పెడుతున్నాం
-    video.muted = false;
-    video.volume = 1.0;
-    
-    video.style.display = "block";
+  video.pause();
 
-    // వీడియో లోడ్ అవ్వడానికి చిన్న టైమ్‌అవుట్
-    setTimeout(() => {
-        let playPromise = video.play();
-        
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log("Play failed, retrying...", error);
-                // సేఫ్టీ కోసం ఒకవేళ ఆగితే మళ్లీ ప్లే చేయడానికి ట్రై చేస్తుంది
-                video.muted = false;
-                video.play();
-            });
-        }
-    }, 250);
+  video.currentTime = 0;
+
+  video.style.display = "none";
+
 }
 
-// 3. టార్గెట్ కోల్పోయినప్పుడు వీడియో ఆపే ఫంక్షన్
-function stopVideo() {
-    video.pause();
-    video.currentTime = 0;
-    video.style.display = "none";
+for(let i=0; i<TOTAL_MARKERS; i++){
+
+  const marker = document.createElement("a-entity");
+
+  marker.setAttribute("mindar-image-target",`targetIndex:${i}`);
+
+  // 001,002,003 format
+  const videoName = String(i + 1).padStart(3,'0');
+
+  marker.addEventListener("targetFound", () => {
+    playVideo(videoName);
+  });
+
+  marker.addEventListener("targetLost", stopVideo);
+
+  scene.appendChild(marker);
+
 }
 
-// 4. టార్గెట్ మార్కర్లను క్రియేట్ చేయడం
-window.addEventListener("load", () => {
-    for (let i = 0; i < TOTAL; i++) {
-        let marker = document.createElement("a-entity");
-        marker.setAttribute("mindar-image-target", `targetIndex:${i}`);
-        
-        marker.addEventListener("targetFound", () => playVideo(i));
-        marker.addEventListener("targetLost", stopVideo);
-        
-        scene.appendChild(marker);
-    }
-});
 </script>
 
 </body>
