@@ -26,7 +26,6 @@ body{
   z-index:9999;
 }
 </style>
-
 </head>
 
 <body>
@@ -35,27 +34,29 @@ body{
 id="fullscreenVideo"
 playsinline
 webkit-playsinline
-autoplay
+muted
 ></video>
 
 <a-scene
-mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
+mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiScanning: true;"
+embedded
 color-space="sRGB"
-renderer="colorManagement:true"
+renderer="colorManagement: true, physicallyCorrectLights"
 vr-mode-ui="enabled:false"
 device-orientation-permission-ui="enabled:false"
 >
 
-<a-assets></a-assets>
-
-<a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+<a-camera
+position="0 0 0"
+look-controls="enabled:false"
+></a-camera>
 
 </a-scene>
 
 <script>
 
-const video = document.getElementById("fullscreenVideo");
 const scene = document.querySelector("a-scene");
+const video = document.getElementById("fullscreenVideo");
 
 const TOTAL_MARKERS = 30;
 
@@ -65,7 +66,7 @@ function playVideo(videoName){
 
   video.style.display = "block";
 
-  video.play().catch(()=>{});
+  video.play();
 
 }
 
@@ -79,20 +80,28 @@ function stopVideo(){
 
 }
 
-for(let i=0; i<TOTAL_MARKERS; i++){
+for(let i=0;i<TOTAL_MARKERS;i++){
 
   const marker = document.createElement("a-entity");
 
-  marker.setAttribute("mindar-image-target",`targetIndex:${i}`);
+  marker.setAttribute(
+    "mindar-image-target",
+    `targetIndex:${i}`
+  );
 
-  // 001,002,003 format
-  const videoName = String(i + 1).padStart(3,'0');
+  const videoName = String(i+1).padStart(3,'0');
 
-  marker.addEventListener("targetFound", () => {
+  marker.addEventListener("targetFound", ()=>{
+
     playVideo(videoName);
+
   });
 
-  marker.addEventListener("targetLost", stopVideo);
+  marker.addEventListener("targetLost", ()=>{
+
+    stopVideo();
+
+  });
 
   scene.appendChild(marker);
 
