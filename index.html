@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,100 +11,80 @@
 
 <style>
 body{
-  margin:0;
-  overflow:hidden;
+margin:0;
+overflow:hidden;
 }
 
 #fullscreenVideo{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100vw;
-  height:100vh;
-  object-fit:contain;
-  background:black;
-  display:none;
-  z-index:9999;
+position:fixed;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+object-fit:contain;
+background:black;
+display:none;
+z-index:9999;
 }
 </style>
+
 </head>
 
 <body>
 
 <video
 id="fullscreenVideo"
+src="./videos/Saileshpriya.mp4"
 playsinline
 webkit-playsinline
-muted
-></video>
+autoplay
+
+> </video>
 
 <a-scene
-mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiScanning: true;"
-embedded
+mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
 color-space="sRGB"
-renderer="colorManagement: true, physicallyCorrectLights"
+renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
 device-orientation-permission-ui="enabled:false"
+
 >
 
-<a-camera
-position="0 0 0"
-look-controls="enabled:false"
-></a-camera>
+<a-assets></a-assets>
+
+<a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
 </a-scene>
 
 <script>
 
-const scene = document.querySelector("a-scene");
 const video = document.getElementById("fullscreenVideo");
+const scene = document.querySelector("a-scene");
 
 const TOTAL_MARKERS = 30;
 
-function playVideo(videoName){
-
-  video.src = `./videos/${videoName}.mp4`;
-
-  video.style.display = "block";
-
-  video.play();
-
+function playVideo(){
+video.style.display="block";
+video.play().catch(()=>{});
 }
 
 function stopVideo(){
-
-  video.pause();
-
-  video.currentTime = 0;
-
-  video.style.display = "none";
-
+video.pause();
+video.currentTime=0;
+video.style.display="none";
 }
 
 for(let i=0;i<TOTAL_MARKERS;i++){
 
-  const marker = document.createElement("a-entity");
+const marker=document.createElement("a-entity");
 
-  marker.setAttribute(
-    "mindar-image-target",
-    `targetIndex:${i}`
-  );
+marker.setAttribute("mindar-image-target",`targetIndex:${i}`);
 
-  const videoName = String(i+1).padStart(3,'0');
+marker.addEventListener("targetFound",playVideo);
 
-  marker.addEventListener("targetFound", ()=>{
+marker.addEventListener("targetLost",stopVideo);
 
-    playVideo(videoName);
-
-  });
-
-  marker.addEventListener("targetLost", ()=>{
-
-    stopVideo();
-
-  });
-
-  scene.appendChild(marker);
+scene.appendChild(marker);
 
 }
 
