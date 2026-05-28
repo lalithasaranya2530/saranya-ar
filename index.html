@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,20 +10,20 @@
 
 <style>
 body{
-margin:0;
-overflow:hidden;
+  margin:0;
+  overflow:hidden;
 }
 
 #fullscreenVideo{
-position:fixed;
-top:0;
-left:0;
-width:100vw;
-height:100vh;
-object-fit:contain;
-background:black;
-display:none;
-z-index:9999;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  object-fit:contain;
+  background:black;
+  display:none;
+  z-index:9999;
 }
 </style>
 
@@ -34,12 +33,10 @@ z-index:9999;
 
 <video
 id="fullscreenVideo"
-src="./videos/Saileshpriya.mp4"
 playsinline
 webkit-playsinline
 autoplay
-
-> </video>
+></video>
 
 <a-scene
 mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
@@ -47,7 +44,6 @@ color-space="sRGB"
 renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
 device-orientation-permission-ui="enabled:false"
-
 >
 
 <a-assets></a-assets>
@@ -63,28 +59,42 @@ const scene = document.querySelector("a-scene");
 
 const TOTAL_MARKERS = 30;
 
-function playVideo(){
-video.style.display="block";
-video.play().catch(()=>{});
+function playVideo(videoName){
+
+  video.src = `./videos/${videoName}.mp4`;
+
+  video.style.display = "block";
+
+  video.play().catch(()=>{});
+
 }
 
 function stopVideo(){
-video.pause();
-video.currentTime=0;
-video.style.display="none";
+
+  video.pause();
+
+  video.currentTime = 0;
+
+  video.style.display = "none";
+
 }
 
-for(let i=0;i<TOTAL_MARKERS;i++){
+for(let i=0; i<TOTAL_MARKERS; i++){
 
-const marker=document.createElement("a-entity");
+  const marker = document.createElement("a-entity");
 
-marker.setAttribute("mindar-image-target",`targetIndex:${i}`);
+  marker.setAttribute("mindar-image-target",`targetIndex:${i}`);
 
-marker.addEventListener("targetFound",playVideo);
+  // 001,002,003 format
+  const videoName = String(i + 1).padStart(3,'0');
 
-marker.addEventListener("targetLost",stopVideo);
+  marker.addEventListener("targetFound", () => {
+    playVideo(videoName);
+  });
 
-scene.appendChild(marker);
+  marker.addEventListener("targetLost", stopVideo);
+
+  scene.appendChild(marker);
 
 }
 
