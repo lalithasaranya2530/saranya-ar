@@ -10,22 +10,23 @@
 
 <style>
 body{
-  margin:0;
-  overflow:hidden;
+margin:0;
+overflow:hidden;
 }
 
 #fullscreenVideo{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100vw;
-  height:100vh;
-  object-fit:contain;
-  background:black;
-  display:none;
-  z-index:9999;
+position:fixed;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+object-fit:contain;
+background:black;
+display:none;
+z-index:9999;
 }
 </style>
+
 </head>
 
 <body>
@@ -34,76 +35,86 @@ body{
 id="fullscreenVideo"
 playsinline
 webkit-playsinline
-muted
+autoplay
+controls
 ></video>
 
 <a-scene
-mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiScanning: true;"
-embedded
+mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
 color-space="sRGB"
-renderer="colorManagement: true, physicallyCorrectLights"
+renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
 device-orientation-permission-ui="enabled:false"
 >
 
-<a-camera
-position="0 0 0"
-look-controls="enabled:false"
-></a-camera>
+<a-assets></a-assets>
+
+<a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
 </a-scene>
 
 <script>
 
-const scene = document.querySelector("a-scene");
 const video = document.getElementById("fullscreenVideo");
+const scene = document.querySelector("a-scene");
 
-const TOTAL_MARKERS = 30;
+/*
+Marker 0  -> 001.mp4
+Marker 1  -> 002.mp4
+Marker 2  -> 003.mp4
+Marker 3  -> 004.mp4
+Marker 4  -> 005.mp4
+*/
 
-function playVideo(videoName){
+const videos = [
+"./videos/001.mp4",
+"./videos/002.mp4",
+"./videos/003.mp4",
+"./videos/004.mp4",
+"./videos/005.mp4"
+];
 
-  video.src = `./videos/${videoName}.mp4`;
+function playVideo(videoSrc){
 
-  video.style.display = "block";
+video.src = videoSrc;
 
-  video.play();
+video.style.display = "block";
+
+video.play().catch((err)=>{
+console.log(err);
+});
 
 }
 
 function stopVideo(){
 
-  video.pause();
+video.pause();
 
-  video.currentTime = 0;
+video.currentTime = 0;
 
-  video.style.display = "none";
+video.style.display = "none";
 
 }
 
-for(let i=0;i<TOTAL_MARKERS;i++){
+for(let i=0; i<videos.length; i++){
 
-  const marker = document.createElement("a-entity");
+const marker = document.createElement("a-entity");
 
-  marker.setAttribute(
-    "mindar-image-target",
-    `targetIndex:${i}`
-  );
+marker.setAttribute("mindar-image-target", `targetIndex:${i}`);
 
-  const videoName = String(i+1).padStart(3,'0');
+marker.addEventListener("targetFound", ()=>{
 
-  marker.addEventListener("targetFound", ()=>{
+playVideo(videos[i]);
 
-    playVideo(videoName);
+});
 
-  });
+marker.addEventListener("targetLost", ()=>{
 
-  marker.addEventListener("targetLost", ()=>{
+stopVideo();
 
-    stopVideo();
+});
 
-  });
-
-  scene.appendChild(marker);
+scene.appendChild(marker);
 
 }
 
